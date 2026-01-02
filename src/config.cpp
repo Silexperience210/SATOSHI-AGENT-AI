@@ -3,8 +3,8 @@
 
 ConfigManager configManager;
 
-// Cle Google TTS par defaut (Vertex AI)
-#define DEFAULT_GOOGLE_TTS_KEY "AQ.Ab8RN6L3Z4yQKKyAwVoQaGF-KHbCLLzWqKE6GZYT3JIMjtMY4w"
+// Cle Google TTS par defaut (Vertex AI) - SUPPRIMEE pour securite
+#define DEFAULT_GOOGLE_TTS_KEY ""
 
 void ConfigManager::begin() {
     prefs.begin("satoshi", false);
