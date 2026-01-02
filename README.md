@@ -59,7 +59,7 @@ SATOSHI AGENT AI is an advanced AI-powered voice assistant for Bitcoin enthusias
 
 ### Option 1: Direct Web Flashing (Recommended)
 For easy flashing without installing tools:
-1. Open [flash.html](flash.html) in a Chrome-based browser.
+1. Open [index.html](index.html) in a Chrome-based browser.
 2. Connect your ESP32-S3 via USB.
 3. Click "Install" and follow the prompts.
 
