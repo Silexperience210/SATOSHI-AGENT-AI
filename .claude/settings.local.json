@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pio run:*)",
+      "Bash(timeout 30 pio device monitor:*)",
+      "Bash(python:*)",
+      "Bash(timeout 60 pio device monitor:*)",
+      "Bash(timeout 90 pio device monitor:*)",
+      "Bash(timeout 120 pio device monitor:*)",
+      "Bash(timeout 180 pio device monitor:*)",
+      "Bash(timeout 45 pio device monitor:*)",
+      "Bash(mode)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-WMIObject Win32_SerialPort | Select-Object DeviceID, Description\")",
+      "Bash(git clone:*)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Silex\\\\AppData\\\\Local\\\\Temp\\\\xiaozhi-esp32\\\\*unihiker*\")",
+      "Bash(timeout:*)",
+      "Bash(~/.platformio/penv/Scripts/pio.exe run:*)"
+    ]
+  }
+}

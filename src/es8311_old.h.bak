@@ -1,0 +1,82 @@
+// es8311.h - Driver ES8311 Audio Codec
+#ifndef ES8311_H
+#define ES8311_H
+
+#include <Arduino.h>
+#include <Wire.h>
+
+// ES8311 I2C Address
+#define ES8311_ADDR 0x18
+
+// ES8311 Registers
+#define ES8311_REG00_RESET          0x00
+#define ES8311_REG01_CLK_MANAGER    0x01
+#define ES8311_REG02_CLK_MANAGER    0x02
+#define ES8311_REG03_CLK_MANAGER    0x03
+#define ES8311_REG04_CLK_MANAGER    0x04
+#define ES8311_REG05_CLK_MANAGER    0x05
+#define ES8311_REG06_CLK_MANAGER    0x06
+#define ES8311_REG07_CLK_MANAGER    0x07
+#define ES8311_REG08_CLK_MANAGER    0x08
+#define ES8311_REG09_SDPIN          0x09
+#define ES8311_REG0A_SDPOUT         0x0A
+#define ES8311_REG0B_SYSTEM         0x0B
+#define ES8311_REG0C_SYSTEM         0x0C
+#define ES8311_REG0D_SYSTEM         0x0D
+#define ES8311_REG0E_SYSTEM         0x0E
+#define ES8311_REG0F_SYSTEM         0x0F
+#define ES8311_REG10_SYSTEM         0x10
+#define ES8311_REG11_SYSTEM         0x11
+#define ES8311_REG12_SYSTEM         0x12
+#define ES8311_REG13_SYSTEM         0x13
+#define ES8311_REG14_SYSTEM         0x14
+#define ES8311_REG15_ADC            0x15
+#define ES8311_REG16_ADC            0x16
+#define ES8311_REG17_ADC            0x17
+#define ES8311_REG18_ADC            0x18
+#define ES8311_REG19_ADC            0x19
+#define ES8311_REG1A_ADC            0x1A
+#define ES8311_REG1B_ADC            0x1B
+#define ES8311_REG1C_ADC            0x1C
+#define ES8311_REG32_DAC            0x32
+#define ES8311_REG37_DAC            0x37
+#define ES8311_REG44_GPIO           0x44
+#define ES8311_REG45_GPIO           0x45
+#define ES8311_REGFA_CHIPID1        0xFA
+#define ES8311_REGFB_CHIPID2        0xFB
+#define ES8311_REGFC_CHIPVER        0xFC
+#define ES8311_REGFD_CHIPID         0xFD
+
+class ES8311 {
+public:
+    ES8311();
+
+    bool begin(TwoWire* wire = &Wire);
+    bool init();
+
+    // Volume controls (0-100)
+    void setMicGain(uint8_t gain);
+    void setOutputVolume(uint8_t volume);
+
+    // Mute controls
+    void muteMic(bool mute);
+    void muteOutput(bool mute);
+
+    // Get chip ID
+    uint16_t getChipID();
+
+    // Register access (public pour debug)
+    bool writeReg(uint8_t reg, uint8_t value);
+    uint8_t readReg(uint8_t reg);
+
+    // Test des entrees MIC (MIC1, MIC2, both)
+    void testMicInputs();
+    void setMicInput(uint8_t input);  // 1=MIC1, 2=MIC2, 3=both
+
+private:
+    TwoWire* _wire;
+};
+
+extern ES8311 es8311;
+
+#endif

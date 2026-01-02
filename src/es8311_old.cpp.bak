@@ -1,0 +1,291 @@
+// es8311.cpp - Driver ES8311 Audio Codec pour Freenove ESP32-S3 Display
+// Reference: github.com/Freenove/Freenove_ESP32_S3_Display
+#include "es8311.h"
+
+ES8311 es8311;
+
+// Registres ES8311
+#define ES8311_RESET_REG00        0x00
+#define ES8311_CLK_MANAGER_REG01  0x01
+#define ES8311_CLK_MANAGER_REG02  0x02
+#define ES8311_CLK_MANAGER_REG03  0x03
+#define ES8311_CLK_MANAGER_REG04  0x04
+#define ES8311_CLK_MANAGER_REG05  0x05
+#define ES8311_CLK_MANAGER_REG06  0x06
+#define ES8311_CLK_MANAGER_REG07  0x07
+#define ES8311_CLK_MANAGER_REG08  0x08
+#define ES8311_SDPIN_REG09        0x09
+#define ES8311_SDPOUT_REG0A       0x0A
+#define ES8311_SYSTEM_REG0B       0x0B
+#define ES8311_SYSTEM_REG0C       0x0C
+#define ES8311_SYSTEM_REG0D       0x0D
+#define ES8311_SYSTEM_REG0E       0x0E
+#define ES8311_SYSTEM_REG0F       0x0F
+#define ES8311_SYSTEM_REG10       0x10
+#define ES8311_SYSTEM_REG11       0x11
+#define ES8311_SYSTEM_REG12       0x12
+#define ES8311_SYSTEM_REG13       0x13
+#define ES8311_SYSTEM_REG14       0x14
+#define ES8311_ADC_REG15          0x15
+#define ES8311_ADC_REG16          0x16
+#define ES8311_ADC_REG17          0x17
+#define ES8311_ADC_REG18          0x18
+#define ES8311_ADC_REG19          0x19
+#define ES8311_ADC_REG1A          0x1A
+#define ES8311_ADC_REG1B          0x1B
+#define ES8311_ADC_REG1C          0x1C
+#define ES8311_DAC_REG31          0x31
+#define ES8311_DAC_REG32          0x32
+#define ES8311_DAC_REG33          0x33
+#define ES8311_DAC_REG34          0x34
+#define ES8311_DAC_REG35          0x35
+#define ES8311_DAC_REG37          0x37
+#define ES8311_GPIO_REG44         0x44
+#define ES8311_GP_REG45           0x45
+
+ES8311::ES8311() {
+    _wire = nullptr;
+}
+
+bool ES8311::begin(TwoWire* wire) {
+    _wire = wire;
+
+    // Check if ES8311 is present
+    _wire->beginTransmission(ES8311_ADDR);
+    uint8_t error = _wire->endTransmission();
+
+    if (error != 0) {
+        Serial.printf("ES8311 non trouve a 0x%02X (erreur %d)\n", ES8311_ADDR, error);
+        return false;
+    }
+
+    // Read Chip ID to verify communication
+    uint8_t chipId1 = readReg(0xFD);
+    uint8_t chipId2 = readReg(0xFE);
+    uint8_t chipVer = readReg(0xFF);
+
+    Serial.printf("ES8311 detecte: ChipID=0x%02X%02X, Version=0x%02X\n", chipId1, chipId2, chipVer);
+
+    // Test write/read to verify I2C works properly
+    uint8_t testReg = readReg(ES8311_GPIO_REG44);
+    writeReg(ES8311_GPIO_REG44, 0xAA);
+    uint8_t readBack = readReg(ES8311_GPIO_REG44);
+    writeReg(ES8311_GPIO_REG44, testReg);  // Restore
+
+    if (readBack != 0xAA) {
+        Serial.printf("ES8311 I2C write/read test FAILED: wrote 0xAA, read 0x%02X\n", readBack);
+    } else {
+        Serial.println("ES8311 I2C write/read test OK");
+    }
+
+    return true;
+}
+
+bool ES8311::init() {
+    Serial.println("Initialisation ES8311 (Freenove FNK0104)...");
+
+    // ============================================
+    // Séquence basée sur Freenove ESP32-S3 Display
+    // Reference: github.com/Freenove/Freenove_ESP32_S3_Display
+    // ============================================
+
+    // 1. Soft reset
+    writeReg(ES8311_RESET_REG00, 0x1F);
+    delay(20);
+    writeReg(ES8311_RESET_REG00, 0x00);
+    delay(20);
+    writeReg(ES8311_RESET_REG00, 0x80);  // Power-on command
+
+    // 2. Clock configuration pour 16kHz
+    writeReg(ES8311_CLK_MANAGER_REG01, 0x3F);  // Enable all clocks, MCLK from pin
+
+    // 3. Clock configuration
+    // REG01: 0x30 = MCLK from pad, enable clock to analog
+    writeReg(ES8311_CLK_MANAGER_REG01, 0x30);
+
+    // REG02-08: Configuration pour 16kHz avec MCLK=4.096MHz (256*16000)
+    // Selon coeff_div[] dans esp-adf pour 16000Hz avec MCLK=256*Fs
+    writeReg(ES8311_CLK_MANAGER_REG02, 0x00);  // mclk_div=1
+    writeReg(ES8311_CLK_MANAGER_REG03, 0x10);  // ADC osr = 256
+    writeReg(ES8311_CLK_MANAGER_REG04, 0x10);  // DAC osr = 256
+    writeReg(ES8311_CLK_MANAGER_REG05, 0x00);  // adc/dac div = 1
+    writeReg(ES8311_CLK_MANAGER_REG06, 0x00);  // bclk div auto
+    writeReg(ES8311_CLK_MANAGER_REG07, 0x00);  // lrck div hi
+    writeReg(ES8311_CLK_MANAGER_REG08, 0xFF);  // lrck div lo
+
+    // 4. SDP (Serial Data Port) - Format I2S 16-bit
+    // REG09: DAC SDP - I2S format, 16-bit
+    writeReg(ES8311_SDPIN_REG09, 0x00);
+    // REG0A: ADC SDP - I2S format, 16-bit, ENABLE ADC data output
+    writeReg(ES8311_SDPOUT_REG0A, 0x00);
+
+    // 5. System power configuration (ordre important!)
+    writeReg(ES8311_SYSTEM_REG0B, 0x00);
+    writeReg(ES8311_SYSTEM_REG0C, 0x00);
+    writeReg(ES8311_SYSTEM_REG10, 0x1F);  // VMID enable, bias enable
+    writeReg(ES8311_SYSTEM_REG11, 0x7F);  // Power all ON
+
+    // 6. ADC configuration - ESSENTIEL pour microphone
+    // REG16: ADC gain scale (selon Freenove)
+    writeReg(ES8311_ADC_REG16, 0x24);
+
+    // 7. Start sequence for ADC (microphone)
+    // REG17: ADC digital volume = 0xC8 (valeur Freenove, plus fort que ESP-ADF 0xBF)
+    writeReg(ES8311_ADC_REG17, 0xC8);
+    // REG0E: Enable analog power
+    writeReg(ES8311_SYSTEM_REG0E, 0x02);
+    // REG12: Analog power (no powerdown)
+    writeReg(ES8311_SYSTEM_REG12, 0x00);
+
+    // REG14: Microphone configuration
+    // Bit6: DMIC_ON (0=analog MEMS, 1=digital PDM)
+    // Bit5:4: LINSEL = input selection (1=MIC1, 2=MIC2, 3=both)
+    // Bit3:0: PGAGAIN = 0-10 (0dB to 30dB, step 3dB)
+    // 0x1A = 0001 1010 = DMIC=0 (analog), LINSEL=1 (MIC1), PGAGAIN=10 (30dB)
+    // Essayer MIC1 d'abord car c'est souvent l'entree par defaut
+    writeReg(ES8311_SYSTEM_REG14, 0x1A);  // MIC1 analog, 30dB gain
+    Serial.println("ES8311: MIC1 input, analog MEMS, PGA gain=30dB");
+
+    // REG0D: System control - enable paths
+    writeReg(ES8311_SYSTEM_REG0D, 0x01);
+    // REG15: ADC path config - Bit6=1 to power ON ADC
+    writeReg(ES8311_ADC_REG15, 0x40);
+
+    // 8. DAC configuration (speaker output)
+    writeReg(ES8311_DAC_REG31, 0x00);  // No mute
+    writeReg(ES8311_DAC_REG32, 0xBF);  // DAC volume (ESP-ADF default)
+    writeReg(ES8311_DAC_REG37, 0x08);  // DAC output gain
+
+    // 9. GPIO45 config
+    writeReg(ES8311_GP_REG45, 0x00);
+
+    // 10. Enable chip state machine (CSM)
+    // REG00: Bit7=1 to start, Bit6=0 for slave mode (ESP32 is master)
+    writeReg(ES8311_RESET_REG00, 0x80);
+
+    delay(100);  // Longer stabilization time
+
+    Serial.println("ES8311 initialise avec succes");
+
+    // Dump registres critiques
+    Serial.println("\n=== ES8311 Register Dump ===");
+    Serial.printf("REG00 (Reset/CSM):  0x%02X (expect 0x80)\n", readReg(ES8311_RESET_REG00));
+    Serial.printf("REG01 (CLK MGR):    0x%02X (expect 0x30)\n", readReg(ES8311_CLK_MANAGER_REG01));
+    Serial.printf("REG09 (DAC SDP):    0x%02X (expect 0x00)\n", readReg(ES8311_SDPIN_REG09));
+    Serial.printf("REG0A (ADC SDP):    0x%02X (expect 0x00, ADC output enabled)\n", readReg(ES8311_SDPOUT_REG0A));
+    Serial.printf("REG0D (SYS CTRL):   0x%02X (expect 0x01)\n", readReg(ES8311_SYSTEM_REG0D));
+    Serial.printf("REG0E (SYS PWR):    0x%02X (expect 0x02)\n", readReg(ES8311_SYSTEM_REG0E));
+    Serial.printf("REG14 (MIC CFG):    0x%02X (expect 0x1A - MIC1, 30dB)\n", readReg(ES8311_SYSTEM_REG14));
+    Serial.printf("REG15 (ADC CTRL):   0x%02X (expect 0x40 - ADC power ON)\n", readReg(ES8311_ADC_REG15));
+    Serial.printf("REG16 (ADC GAIN):   0x%02X (expect 0x24)\n", readReg(ES8311_ADC_REG16));
+    Serial.printf("REG17 (ADC VOL):    0x%02X (expect 0xBF)\n", readReg(ES8311_ADC_REG17));
+    Serial.printf("REG44 (GPIO):       0x%02X (expect 0x08)\n", readReg(ES8311_GPIO_REG44));
+    Serial.println("============================\n");
+
+    return true;
+}
+
+void ES8311::setMicGain(uint8_t gain) {
+    // Gain: 0-100 mapped to 0x00-0xBF (max gain)
+    uint8_t regValue = (gain * 0xBF) / 100;
+    writeReg(ES8311_ADC_REG17, regValue);
+    Serial.printf("ES8311 mic gain: %d%% (reg 0x17: 0x%02X)\n", gain, regValue);
+}
+
+void ES8311::setOutputVolume(uint8_t volume) {
+    // Volume: 0-100 mapped to 0x00-0xFF (full range)
+    uint8_t regValue = (volume * 0xFF) / 100;
+    writeReg(ES8311_DAC_REG32, regValue);
+    Serial.printf("ES8311 output volume: %d%% (reg 0x32: 0x%02X)\n", volume, regValue);
+}
+
+void ES8311::muteMic(bool mute) {
+    uint8_t reg = readReg(ES8311_ADC_REG15);
+    if (mute) {
+        reg |= 0x01;
+    } else {
+        reg &= ~0x01;
+    }
+    writeReg(ES8311_ADC_REG15, reg);
+    Serial.printf("ES8311 mic mute: %s\n", mute ? "ON" : "OFF");
+}
+
+void ES8311::muteOutput(bool mute) {
+    uint8_t reg = readReg(ES8311_DAC_REG31);
+    if (mute) {
+        reg |= 0x08;  // DAC soft mute
+    } else {
+        reg &= ~0x08;
+    }
+    writeReg(ES8311_DAC_REG31, reg);
+    Serial.printf("ES8311 output mute: %s\n", mute ? "ON" : "OFF");
+}
+
+uint16_t ES8311::getChipID() {
+    uint8_t id1 = readReg(0xFD);
+    return id1;
+}
+
+bool ES8311::writeReg(uint8_t reg, uint8_t value) {
+    _wire->beginTransmission(ES8311_ADDR);
+    _wire->write(reg);
+    _wire->write(value);
+    uint8_t error = _wire->endTransmission();
+    if (error != 0) {
+        Serial.printf("ES8311 write error reg 0x%02X: %d\n", reg, error);
+        return false;
+    }
+    return true;
+}
+
+uint8_t ES8311::readReg(uint8_t reg) {
+    _wire->beginTransmission(ES8311_ADDR);
+    _wire->write(reg);
+    _wire->endTransmission(false);
+    _wire->requestFrom(ES8311_ADDR, (uint8_t)1);
+    if (_wire->available()) {
+        return _wire->read();
+    }
+    return 0;
+}
+
+void ES8311::setMicInput(uint8_t input) {
+    // REG14: Configuration entree MIC
+    // Bit6: DMIC_ON (0=analog, 1=digital PDM mic)
+    // Bit5:4: LINSEL - Input selection: 0=none, 1=Mic1p-Mic1n, 2=Mic2p-Mic2n, 3=both
+    // Bit3:0: PGAGAIN - 0-10 pour 0-30dB (10 = 30dB max)
+
+    uint8_t reg14 = 0x0A;  // DMIC_ON=0 (analog), PGAGAIN=10 (30dB)
+
+    switch (input) {
+        case 1:
+            reg14 |= 0x10;  // LINSEL=1 (MIC1 only)
+            Serial.println("ES8311: MIC1 selectionne (MIC1P-MIC1N)");
+            break;
+        case 2:
+            reg14 |= 0x20;  // LINSEL=2 (MIC2 only)
+            Serial.println("ES8311: MIC2 selectionne (MIC2P-MIC2N)");
+            break;
+        case 3:
+        default:
+            reg14 |= 0x30;  // LINSEL=3 (both MIC1+MIC2)
+            Serial.println("ES8311: MIC1+MIC2 selectionnes");
+            break;
+    }
+
+    writeReg(ES8311_SYSTEM_REG14, reg14);
+    Serial.printf("ES8311 REG14 = 0x%02X\n", reg14);
+}
+
+void ES8311::testMicInputs() {
+    Serial.println("\n========== TEST ENTREES MIC ES8311 ==========");
+    Serial.println("Test simplifie - verifie les registres du codec");
+
+    Serial.printf("REG14 (MIC CFG): 0x%02X\n", readReg(ES8311_SYSTEM_REG14));
+    Serial.printf("REG15 (ADC CTRL): 0x%02X\n", readReg(ES8311_ADC_REG15));
+    Serial.printf("REG16 (ADC GAIN): 0x%02X\n", readReg(ES8311_ADC_REG16));
+    Serial.printf("REG17 (ADC VOL): 0x%02X\n", readReg(ES8311_ADC_REG17));
+
+    Serial.println("\nPour tester le micro, utilisez /record et /play");
+    Serial.println("================================\n");
+}
