@@ -9,15 +9,15 @@
       "chipFamily": "ESP32-S3",
       "parts": [
         {
-          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/main/firmware/bootloader.bin",
+          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/master/firmware/bootloader.bin",
           "offset": 4096
         },
         {
-          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/main/firmware/partitions.bin",
+          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/master/firmware/partitions.bin",
           "offset": 32768
         },
         {
-          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/main/firmware/firmware.bin",
+          "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/master/firmware/firmware.bin",
           "offset": 65536
         }
       ]
