@@ -5,7 +5,7 @@
   "new_install_improv_wait_time": 0,
   "builds": [
     {
-      "chipFamily": "ESP32-S3",
+      "chipFamily": "ESP32",
       "parts": [
         {
           "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/master/firmware/bootloader.bin",
