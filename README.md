@@ -24,6 +24,7 @@ SATOSHI AGENT AI is an advanced AI-powered voice assistant for Bitcoin enthusias
   - Purchase: [Freenove ESP32-S3 2.8" Touchscreen](https://www.freenove.com/product/fnk0085/)
 - **Microphone**: Built-in or external I2S microphone
 - **Speaker**: 8Ω speaker for audio output
+  - Purchase: [8Ω Speaker on Amazon](https://www.amazon.com/s?k=8+ohm+speaker+3w)
 - **Power Supply**: 5V USB or battery
 
 ## Software Requirements
