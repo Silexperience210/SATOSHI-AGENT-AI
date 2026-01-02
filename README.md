@@ -77,7 +77,7 @@ Contributions welcome! Please fork and submit pull requests.
 
 ## License
 
-MIT License - see LICENSE file for details.
+CeCILL License - see LICENSE file for details.
 
 ## Disclaimer
 
