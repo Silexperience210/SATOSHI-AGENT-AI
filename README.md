@@ -59,15 +59,15 @@ SATOSHI AGENT AI is an advanced AI-powered voice assistant for Bitcoin enthusias
 
 ### Option 1: Direct Web Flashing (Recommended)
 For easy flashing without installing tools:
-1. Open [index.html](index.html) in a Chrome-based browser.
+1. Open the [Web Flasher](https://silexperience210.github.io/SATOSHI-AGENT-AI/) in a Chrome-based browser.
 2. Connect your ESP32-S3 via USB.
-3. Click "Install" and follow the prompts.
+3. Click "Connect" and follow the prompts.
 
 ### Option 2: Manual Flashing with esptool
 If you prefer command line:
 ```bash
 pip install esptool
-esptool.py --chip esp32s3 --port COMx write_flash 0x1000 firmware/bootloader.bin 0x8000 firmware/partitions.bin 0x10000 firmware/firmware.bin
+esptool.py --chip esp32s3 --port COMx write_flash 0x0 firmware/bootloader.bin 0x8000 firmware/partitions.bin 0x10000 firmware/firmware.bin
 ```
 Replace `COMx` with your serial port.
 
