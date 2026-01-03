@@ -166,8 +166,8 @@
         canvas.height = window.innerHeight;
 
         let nodes = [];
-        const nodeCount = 25;
-        const maxDistance = 150;
+        const nodeCount = 40;
+        const maxDistance = 200;
 
         class Node {
             constructor() {
@@ -215,12 +215,12 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < maxDistance) {
-                        const alpha = (maxDistance - distance) / maxDistance * 0.3;
+                        const alpha = (maxDistance - distance) / maxDistance * 0.8;
                         ctx.beginPath();
                         ctx.moveTo(nodes[i].x, nodes[i].y);
                         ctx.lineTo(nodes[j].x, nodes[j].y);
                         ctx.strokeStyle = `rgba(0, 212, 255, ${alpha})`;
-                        ctx.lineWidth = 1;
+                        ctx.lineWidth = 2;
                         ctx.stroke();
                     }
                 }
