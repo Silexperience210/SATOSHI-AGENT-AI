@@ -7,8 +7,8 @@
     <script type="module" src="https://unpkg.com/esp-web-tools@latest/dist/web/install-button.js"></script>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e, #0f3460);
             color: #ffffff;
             margin: 0;
             padding: 0;
@@ -20,36 +20,105 @@
             justify-content: center;
         }
         h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             text-align: center;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
-            animation: glow 2s ease-in-out infinite alternate;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            animation: titleGlow 3s ease-in-out infinite alternate;
         }
-        @keyframes glow {
-            from { text-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff; }
-            to { text-shadow: 0 0 30px #ff6b6b, 0 0 60px #ff6b6b; }
+        @keyframes titleGlow {
+            0% { filter: brightness(1) hue-rotate(0deg); }
+            50% { filter: brightness(1.2) hue-rotate(120deg); }
+            100% { filter: brightness(1) hue-rotate(240deg); }
         }
         p {
             text-align: center;
-            max-width: 600px;
-            margin: 10px 0;
+            max-width: 700px;
+            margin: 15px 0;
+            line-height: 1.6;
         }
         esp-web-install-button {
-            margin: 30px 0;
+            margin: 40px 0;
+            transform: scale(1.1);
         }
         a {
             color: #00d4ff;
             text-decoration: none;
+            transition: color 0.3s;
         }
         a:hover {
-            text-decoration: underline;
+            color: #ff6b6b;
         }
         canvas {
             position: fixed;
             top: 0;
             left: 0;
             z-index: -1;
+        }
+        #donations {
+            margin-top: 60px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            width: 90%;
+        }
+        #donations h2 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+        .donation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            justify-items: center;
+        }
+        @media (max-width: 768px) {
+            .donation-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+        .donation-item p {
+            margin: 10px 0;
+            font-weight: 300;
+        }
+        .qr-button {
+            background: linear-gradient(45deg, #00d4ff, #4ecdc4);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+        .qr-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+        }
+        .qr-code {
+            margin-top: 15px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .credit {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #4ecdc4;
+            font-style: italic;
         }
     </style>
 </head>
@@ -66,28 +135,28 @@
     <p>Alternatively, download the source code and build manually using PlatformIO.</p>
     <p><a href="https://github.com/Silexperience210/SATOSHI-AGENT-AI">View on GitHub</a></p>
 
-    <div id="donations" style="margin-top: 50px; text-align: center;">
-        <h2 style="color: #00d4ff;">Support SATOSHI AGENT AI</h2>
+    <div id="donations">
+        <h2>Support SATOSHI AGENT AI</h2>
         <p>If you find this project useful, consider supporting its development!</p>
         
-        <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
-            <div>
+        <div class="donation-grid">
+            <div class="donation-item">
                 <p><strong>Lightning Network:</strong> generousmarble35@zeuspay.com</p>
-                <button onclick="toggleQR('lightning-qr')" style="background: #00d4ff; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Show QR Code</button>
-                <div id="lightning-qr" style="margin-top: 10px; display: none;">
+                <button onclick="toggleQR('lightning-qr')" class="qr-button">Show QR Code</button>
+                <div id="lightning-qr" class="qr-code">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=lightning:generousmarble35@zeuspay.com" alt="Lightning QR Code">
                 </div>
             </div>
             
-            <div>
+            <div class="donation-item">
                 <p><strong>Bitcoin:</strong> bc1q6r3y9gmck8w5c4zfh3kaf5xyt0k0tcd6cx3u42</p>
-                <button onclick="toggleQR('bitcoin-qr')" style="background: #ff6b6b; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Show QR Code</button>
-                <div id="bitcoin-qr" style="margin-top: 10px; display: none;">
+                <button onclick="toggleQR('bitcoin-qr')" class="qr-button">Show QR Code</button>
+                <div id="bitcoin-qr" class="qr-code">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:bc1q6r3y9gmck8w5c4zfh3kaf5xyt0k0tcd6cx3u42" alt="Bitcoin QR Code">
                 </div>
             </div>
         </div>
-        <p style="margin-top: 20px; font-size: 0.9em;">Built by Silexperience</p>
+        <p class="credit">Designed by Silexperience</p>
     </div>
 
     <script>
@@ -96,58 +165,85 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let particles = [];
-        const particleCount = 100;
+        let nodes = [];
+        const nodeCount = 25;
+        const maxDistance = 150;
 
-        class Particle {
+        class Node {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                this.size = Math.random() * 3 + 1;
-                this.color = Math.random() > 0.5 ? '#00d4ff' : '#ff6b6b';
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 4 + 2;
+                this.pulse = Math.random() * Math.PI * 2;
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
+                this.pulse += 0.02;
 
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
             }
 
             draw() {
+                const alpha = 0.5 + 0.5 * Math.sin(this.pulse);
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = `rgba(0, 212, 255, ${alpha})`;
                 ctx.fill();
+                ctx.strokeStyle = `rgba(78, 205, 196, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
             }
         }
 
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+        function initNodes() {
+            nodes = [];
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push(new Node());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < maxDistance) {
+                        const alpha = (maxDistance - distance) / maxDistance * 0.3;
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${alpha})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
+            drawConnections();
+            nodes.forEach(node => {
+                node.update();
+                node.draw();
             });
             requestAnimationFrame(animate);
         }
 
-        initParticles();
+        initNodes();
         animate();
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initParticles();
+            initNodes();
         });
 
         function toggleQR(id) {
