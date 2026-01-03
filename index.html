@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SATOSHI AGENT AI - Web Flasher</title>
     <script type="module" src="https://unpkg.com/esp-web-tools@latest/dist/web/install-button.js"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -66,6 +67,25 @@
     <p>Alternatively, download the source code and build manually using PlatformIO.</p>
     <p><a href="https://github.com/Silexperience210/SATOSHI-AGENT-AI">View on GitHub</a></p>
 
+    <div id="donations" style="margin-top: 50px; text-align: center;">
+        <h2 style="color: #00d4ff;">Support SATOSHI AGENT AI</h2>
+        <p>If you find this project useful, consider supporting its development!</p>
+        
+        <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+            <div>
+                <p><strong>Lightning Network:</strong> generousmarble35@zeuspay.com</p>
+                <button onclick="showQR('lightning', 'lightning:generousmarble35@zeuspay.com')" style="background: #00d4ff; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Show QR Code</button>
+                <div id="lightning-qr" style="margin-top: 10px; display: none;"></div>
+            </div>
+            
+            <div>
+                <p><strong>Bitcoin:</strong> bc1q6r3y9gmck8w5c4zfh3kaf5xyt0k0tcd6cx3u42</p>
+                <button onclick="showQR('bitcoin', 'bitcoin:bc1q6r3y9gmck8w5c4zfh3kaf5xyt0k0tcd6cx3u42')" style="background: #ff6b6b; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Show QR Code</button>
+                <div id="bitcoin-qr" style="margin-top: 10px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const canvas = document.getElementById('particleCanvas');
         const ctx = canvas.getContext('2d');
@@ -125,6 +145,19 @@
             canvas.height = window.innerHeight;
             initParticles();
         });
+
+        function showQR(type, address) {
+            const qrDiv = document.getElementById(type + '-qr');
+            if (qrDiv.style.display === 'none') {
+                qrDiv.innerHTML = '';
+                QRCode.toCanvas(qrDiv, address, { width: 200, height: 200 }, function (error) {
+                    if (error) console.error(error);
+                });
+                qrDiv.style.display = 'block';
+            } else {
+                qrDiv.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
