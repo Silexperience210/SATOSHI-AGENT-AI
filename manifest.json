@@ -1,11 +1,9 @@
 {
   "name": "SATOSHI AGENT AI",
   "version": "1.0.0",
-  "new_install_prompt_erase": true,
-  "new_install_improv_wait_time": 0,
   "builds": [
     {
-      "chipFamily": "esp32s3",
+      "chipFamily": "ESP32-S3",
       "parts": [
         {
           "path": "https://raw.githubusercontent.com/Silexperience210/SATOSHI-AGENT-AI/master/firmware/bootloader.bin",
